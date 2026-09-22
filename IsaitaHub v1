@@ -1,0 +1,849 @@
+--==================================================
+-- IsaitaHub - PANEL COMPLETO
+-- Hitbox + Hitbox Invisible + ESP
+-- Infinite Jump + NoClip + Movimiento Tela ORIGINAL
+-- SIN SPEED PRINCIPAL
+-- + COLOR HITBOX / ESP
+-- + COLOR PANEL
+--==================================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+--==================================================
+-- CONFIGURACIÓN
+--==================================================
+
+local HitboxEnabled = false
+local InvisibleHitboxEnabled = false
+
+local HitboxSize = 8
+local HitboxColor = Color3.fromRGB(0, 255, 0)
+
+local SuperJumpEnabled = false
+local NoClipEnabled = false
+
+--==================================================
+-- MOVIMIENTO TELA ORIGINAL
+--==================================================
+
+local MovementEnabled = false
+local Speed = 21
+
+local Hitboxes = {}
+
+--==================================================
+-- COLORES
+--==================================================
+
+local ColorList = {
+    Color3.fromRGB(0, 255, 0),
+    Color3.fromRGB(255, 0, 0),
+    Color3.fromRGB(0, 170, 255),
+    Color3.fromRGB(255, 255, 0),
+    Color3.fromRGB(255, 0, 255),
+    Color3.fromRGB(255, 255, 255),
+    Color3.fromRGB(255, 128, 0),
+    Color3.fromRGB(0, 255, 255)
+}
+
+local ColorNames = {
+    "Verde",
+    "Rojo",
+    "Azul",
+    "Amarillo",
+    "Rosa",
+    "Blanco",
+    "Naranja",
+    "Cian"
+}
+
+local HitboxColorIndex = 1
+local PanelColorIndex = 1
+
+--==================================================
+-- GUI
+--==================================================
+
+local Gui = Instance.new("ScreenGui")
+Gui.Name = "IsaitaHub"
+Gui.ResetOnSpawn = false
+Gui.IgnoreGuiInset = true
+Gui.Parent = PlayerGui
+
+local Panel = Instance.new("Frame")
+Panel.Size = UDim2.fromOffset(300, 390)
+Panel.Position = UDim2.new(0.5, -150, 0.5, -195)
+Panel.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+Panel.BorderSizePixel = 0
+Panel.Active = true
+Panel.Draggable = true
+Panel.Parent = Gui
+
+local PanelCorner = Instance.new("UICorner")
+PanelCorner.CornerRadius = UDim.new(0, 12)
+PanelCorner.Parent = Panel
+
+--==================================================
+-- TÍTULO
+--==================================================
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -50, 0, 40)
+Title.Position = UDim2.fromOffset(12, 5)
+Title.BackgroundTransparency = 1
+Title.Text = "IsaitaHub"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 20
+Title.TextColor3 = HitboxColor
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Panel
+
+--==================================================
+-- CERRAR
+--==================================================
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.fromOffset(35, 35)
+CloseButton.Position = UDim2.new(1, -42, 0, 5)
+CloseButton.BackgroundTransparency = 1
+CloseButton.Text = "X"
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 18
+CloseButton.TextColor3 = Color3.fromRGB(255, 80, 80)
+CloseButton.Parent = Panel
+
+--==================================================
+-- CREAR BOTÓN
+--==================================================
+
+local function CreateButton(text, y)
+
+    local Button = Instance.new("TextButton")
+
+    Button.Size = UDim2.new(1, -20, 0, 34)
+    Button.Position = UDim2.fromOffset(10, y)
+
+    Button.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
+    Button.BorderSizePixel = 0
+
+    Button.Text = text
+    Button.Font = Enum.Font.GothamBold
+    Button.TextSize = 13
+    Button.TextColor3 = HitboxColor
+
+    Button.Parent = Panel
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = Button
+
+    return Button
+end
+
+--==================================================
+-- HITBOX
+--==================================================
+
+local HitboxButton = CreateButton(
+    "Hitbox  •  OFF",
+    50
+)
+
+local InvisibleButton = CreateButton(
+    "Hitbox invisible  •  OFF",
+    91
+)
+
+local SizeLabel = Instance.new("TextLabel")
+SizeLabel.Size = UDim2.new(1, -20, 0, 20)
+SizeLabel.Position = UDim2.fromOffset(10, 132)
+SizeLabel.BackgroundTransparency = 1
+SizeLabel.Text = "Tamaño Hitbox: 8"
+SizeLabel.Font = Enum.Font.Gotham
+SizeLabel.TextSize = 12
+SizeLabel.TextColor3 = HitboxColor
+SizeLabel.Parent = Panel
+
+local MinusHitbox = CreateButton("−", 154)
+MinusHitbox.Size = UDim2.new(0.45, 0, 0, 30)
+
+local PlusHitbox = CreateButton("+", 154)
+PlusHitbox.Position = UDim2.new(0.55, 0, 0, 154)
+PlusHitbox.Size = UDim2.new(0.45, 0, 0, 30)
+
+--==================================================
+-- OTROS
+--==================================================
+
+local JumpButton = CreateButton(
+    "Infinite Jump  •  OFF",
+    197
+)
+
+local NoClipButton = CreateButton(
+    "No Clip  •  OFF",
+    238
+)
+
+local TelaButton = CreateButton(
+    "Movimiento tela  •  OFF",
+    279
+)
+
+--==================================================
+-- COLOR HITBOX
+--==================================================
+
+local HitboxColorButton = CreateButton(
+    "Color Hitbox  •  Verde",
+    320
+)
+
+HitboxColorButton.Size =
+    UDim2.new(0.48, -5, 0, 30)
+
+--==================================================
+-- COLOR PANEL
+--==================================================
+
+local PanelColorButton = CreateButton(
+    "Color Panel  •  Negro",
+    355
+)
+
+PanelColorButton.Size =
+    UDim2.new(0.48, -5, 0, 30)
+
+PanelColorButton.Position =
+    UDim2.new(0.52, 5, 0, 320)
+
+--==================================================
+-- ELIMINAR HITBOX
+--==================================================
+
+local function RemoveHitbox(player)
+
+    local Data = Hitboxes[player]
+
+    if not Data then
+        return
+    end
+
+    if Data.Box then
+        pcall(function()
+            Data.Box:Destroy()
+        end)
+    end
+
+    if Data.Highlight then
+        pcall(function()
+            Data.Highlight:Destroy()
+        end)
+    end
+
+    Hitboxes[player] = nil
+end
+
+--==================================================
+-- CREAR / ACTUALIZAR HITBOX
+--==================================================
+
+local function ApplyHitbox(player)
+
+    if player == Player then
+        return
+    end
+
+    if not HitboxEnabled and not InvisibleHitboxEnabled then
+        RemoveHitbox(player)
+        return
+    end
+
+    local Character = player.Character
+
+    if not Character then
+        RemoveHitbox(player)
+        return
+    end
+
+    local Root = Character:FindFirstChild("HumanoidRootPart")
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+
+    if not Root or not Humanoid or Humanoid.Health <= 0 then
+        RemoveHitbox(player)
+        return
+    end
+
+    local Data = Hitboxes[player]
+
+    --==================================================
+    -- ACTUALIZAR EXISTENTE
+    --==================================================
+
+    if Data
+        and Data.Box
+        and Data.Box.Parent == Character then
+
+        Data.Box.Size = Vector3.new(
+            HitboxSize,
+            HitboxSize,
+            HitboxSize
+        )
+
+        if InvisibleHitboxEnabled then
+
+            Data.Box.Transparency = 1
+
+            if Data.Highlight then
+                Data.Highlight.Enabled = false
+            end
+
+        else
+
+            Data.Box.Transparency = 0.8
+            Data.Box.Color = HitboxColor
+
+            if Data.Highlight then
+
+                Data.Highlight.Enabled = true
+                Data.Highlight.Adornee = Data.Box
+                Data.Highlight.FillColor = HitboxColor
+                Data.Highlight.OutlineColor = HitboxColor
+                Data.Highlight.FillTransparency = 0.8
+                Data.Highlight.OutlineTransparency = 0
+                Data.Highlight.DepthMode =
+                    Enum.HighlightDepthMode.AlwaysOnTop
+
+            end
+        end
+
+        return
+    end
+
+    --==================================================
+    -- CREAR NUEVA
+    --==================================================
+
+    RemoveHitbox(player)
+
+    local Box = Instance.new("Part")
+
+    Box.Name = "IsaitaHitbox"
+
+    Box.Size = Vector3.new(
+        HitboxSize,
+        HitboxSize,
+        HitboxSize
+    )
+
+    Box.CFrame = Root.CFrame
+    Box.Color = HitboxColor
+    Box.Material = Enum.Material.Neon
+
+    Box.CanCollide = false
+    Box.CanTouch = false
+    Box.CanQuery = true
+
+    Box.Massless = true
+    Box.Anchored = false
+    Box.CastShadow = false
+
+    if InvisibleHitboxEnabled then
+        Box.Transparency = 1
+    else
+        Box.Transparency = 0.8
+    end
+
+    Box.Parent = Character
+
+    --==================================================
+    -- WELD
+    --==================================================
+
+    local Weld = Instance.new("WeldConstraint")
+
+    Weld.Part0 = Root
+    Weld.Part1 = Box
+    Weld.Parent = Box
+
+    --==================================================
+    -- ESP
+    --==================================================
+
+    local Highlight = Instance.new("Highlight")
+
+    Highlight.Name = "IsaitaHitboxESP"
+    Highlight.Adornee = Box
+
+    Highlight.FillColor = HitboxColor
+    Highlight.OutlineColor = HitboxColor
+
+    Highlight.FillTransparency = 0.8
+    Highlight.OutlineTransparency = 0
+
+    Highlight.DepthMode =
+        Enum.HighlightDepthMode.AlwaysOnTop
+
+    Highlight.Enabled =
+        not InvisibleHitboxEnabled
+
+    Highlight.Parent = Box
+
+    Hitboxes[player] = {
+        Box = Box,
+        Highlight = Highlight
+    }
+end
+
+--==================================================
+-- ACTUALIZAR HITBOX
+--==================================================
+
+RunService.Heartbeat:Connect(function()
+
+    if not HitboxEnabled and not InvisibleHitboxEnabled then
+        return
+    end
+
+    for _, player in ipairs(Players:GetPlayers()) do
+
+        if player ~= Player then
+            ApplyHitbox(player)
+        end
+
+    end
+end)
+
+--==================================================
+-- HITBOX NORMAL
+--==================================================
+
+HitboxButton.MouseButton1Click:Connect(function()
+
+    HitboxEnabled = not HitboxEnabled
+
+    if HitboxEnabled then
+
+        InvisibleHitboxEnabled = false
+
+        HitboxButton.Text =
+            "Hitbox  •  ON"
+
+        InvisibleButton.Text =
+            "Hitbox invisible  •  OFF"
+
+    else
+
+        HitboxButton.Text =
+            "Hitbox  •  OFF"
+
+    end
+
+    for _, player in ipairs(Players:GetPlayers()) do
+
+        if player ~= Player then
+            ApplyHitbox(player)
+        end
+
+    end
+end)
+
+--==================================================
+-- HITBOX INVISIBLE
+--==================================================
+
+InvisibleButton.MouseButton1Click:Connect(function()
+
+    InvisibleHitboxEnabled =
+        not InvisibleHitboxEnabled
+
+    if InvisibleHitboxEnabled then
+
+        HitboxEnabled = false
+
+        HitboxButton.Text =
+            "Hitbox  •  OFF"
+
+        InvisibleButton.Text =
+            "Hitbox invisible  •  ON"
+
+    else
+
+        InvisibleButton.Text =
+            "Hitbox invisible  •  OFF"
+
+    end
+
+    for _, player in ipairs(Players:GetPlayers()) do
+
+        if player ~= Player then
+            ApplyHitbox(player)
+        end
+
+    end
+end)
+
+--==================================================
+-- TAMAÑO HITBOX 1 - 45
+--==================================================
+
+MinusHitbox.MouseButton1Click:Connect(function()
+
+    HitboxSize = math.max(
+        1,
+        HitboxSize - 1
+    )
+
+    SizeLabel.Text =
+        "Tamaño Hitbox: " .. HitboxSize
+
+end)
+
+PlusHitbox.MouseButton1Click:Connect(function()
+
+    HitboxSize = math.min(
+        45,
+        HitboxSize + 1
+    )
+
+    SizeLabel.Text =
+        "Tamaño Hitbox: " .. HitboxSize
+
+end)
+
+--==================================================
+-- INFINITE JUMP
+--==================================================
+
+JumpButton.MouseButton1Click:Connect(function()
+
+    SuperJumpEnabled =
+        not SuperJumpEnabled
+
+    if SuperJumpEnabled then
+
+        JumpButton.Text =
+            "Infinite Jump  •  ON"
+
+    else
+
+        JumpButton.Text =
+            "Infinite Jump  •  OFF"
+
+    end
+end)
+
+UserInputService.JumpRequest:Connect(function()
+
+    if not SuperJumpEnabled then
+        return
+    end
+
+    local Character = Player.Character
+
+    if not Character then
+        return
+    end
+
+    local Root =
+        Character:FindFirstChild("HumanoidRootPart")
+
+    if Root then
+
+        Root.AssemblyLinearVelocity =
+            Vector3.new(
+                Root.AssemblyLinearVelocity.X,
+                90,
+                Root.AssemblyLinearVelocity.Z
+            )
+
+    end
+end)
+
+--==================================================
+-- NO CLIP
+--==================================================
+
+NoClipButton.MouseButton1Click:Connect(function()
+
+    NoClipEnabled =
+        not NoClipEnabled
+
+    if NoClipEnabled then
+
+        NoClipButton.Text =
+            "No Clip  •  ON"
+
+    else
+
+        NoClipButton.Text =
+            "No Clip  •  OFF"
+
+    end
+end)
+
+RunService.Stepped:Connect(function()
+
+    if not NoClipEnabled then
+        return
+    end
+
+    local Character = Player.Character
+
+    if not Character then
+        return
+    end
+
+    for _, Object in ipairs(
+        Character:GetDescendants()
+    ) do
+
+        if Object:IsA("BasePart") then
+            Object.CanCollide = false
+        end
+
+    end
+end)
+
+--==================================================
+-- MOVIMIENTO TELA ORIGINAL
+--==================================================
+
+TelaButton.MouseButton1Click:Connect(function()
+
+    MovementEnabled = not MovementEnabled
+
+    if MovementEnabled then
+
+        TelaButton.Text =
+            "Movimiento tela  •  ON"
+
+    else
+
+        TelaButton.Text =
+            "Movimiento tela  •  OFF"
+
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+
+    local Character = Player.Character
+
+    if not Character then
+        return
+    end
+
+    local Humanoid =
+        Character:FindFirstChildOfClass("Humanoid")
+
+    local Root =
+        Character:FindFirstChild("HumanoidRootPart")
+
+    if not Humanoid or not Root then
+        return
+    end
+
+    if MovementEnabled then
+
+        local Direction =
+            Humanoid.MoveDirection
+
+        if Direction.Magnitude > 0 then
+
+            local Flat = Vector3.new(
+                Direction.X,
+                0,
+                Direction.Z
+            )
+
+            if Flat.Magnitude > 0 then
+
+                Flat = Flat.Unit
+
+                Root.AssemblyLinearVelocity =
+                    Vector3.new(
+                        Flat.X * Speed,
+                        Root.AssemblyLinearVelocity.Y,
+                        Flat.Z * Speed
+                    )
+
+                Root.CFrame =
+                    CFrame.lookAt(
+                        Root.Position,
+                        Root.Position + Flat
+                    )
+
+            end
+        end
+    end
+end)
+
+--==================================================
+-- CAMBIAR COLOR HITBOX
+--==================================================
+
+HitboxColorButton.MouseButton1Click:Connect(function()
+
+    HitboxColorIndex =
+        HitboxColorIndex + 1
+
+    if HitboxColorIndex > #ColorList then
+        HitboxColorIndex = 1
+    end
+
+    HitboxColor =
+        ColorList[HitboxColorIndex]
+
+    HitboxColorButton.Text =
+        "Color Hitbox  •  " ..
+        ColorNames[HitboxColorIndex]
+
+    Title.TextColor3 = HitboxColor
+    SizeLabel.TextColor3 = HitboxColor
+
+    HitboxButton.TextColor3 = HitboxColor
+    InvisibleButton.TextColor3 = HitboxColor
+    MinusHitbox.TextColor3 = HitboxColor
+    PlusHitbox.TextColor3 = HitboxColor
+    JumpButton.TextColor3 = HitboxColor
+    NoClipButton.TextColor3 = HitboxColor
+    TelaButton.TextColor3 = HitboxColor
+    HitboxColorButton.TextColor3 = HitboxColor
+    PanelColorButton.TextColor3 = HitboxColor
+
+    for _, Data in pairs(Hitboxes) do
+
+        if Data then
+
+            if Data.Box then
+                Data.Box.Color = HitboxColor
+            end
+
+            if Data.Highlight then
+                Data.Highlight.FillColor =
+                    HitboxColor
+
+                Data.Highlight.OutlineColor =
+                    HitboxColor
+            end
+
+        end
+
+    end
+end)
+
+--==================================================
+-- CAMBIAR COLOR PANEL
+--==================================================
+
+PanelColorButton.MouseButton1Click:Connect(function()
+
+    PanelColorIndex =
+        PanelColorIndex + 1
+
+    if PanelColorIndex > #ColorList then
+        PanelColorIndex = 1
+    end
+
+    Panel.BackgroundColor3 =
+        ColorList[PanelColorIndex]
+
+    PanelColorButton.Text =
+        "Color Panel  •  " ..
+        ColorNames[PanelColorIndex]
+
+end)
+
+--==================================================
+-- JUGADORES
+--==================================================
+
+local function SetupPlayer(player)
+
+    if player == Player then
+        return
+    end
+
+    player.CharacterAdded:Connect(function()
+
+        task.wait(0.5)
+
+        if HitboxEnabled
+            or InvisibleHitboxEnabled then
+
+            ApplyHitbox(player)
+
+        end
+
+    end)
+
+    if player.Character then
+
+        task.defer(function()
+
+            if HitboxEnabled
+                or InvisibleHitboxEnabled then
+
+                ApplyHitbox(player)
+
+            end
+
+        end)
+
+    end
+end
+
+for _, player in ipairs(
+    Players:GetPlayers()
+) do
+
+    SetupPlayer(player)
+end
+
+Players.PlayerAdded:Connect(
+    SetupPlayer
+)
+
+Players.PlayerRemoving:Connect(function(player)
+
+    RemoveHitbox(player)
+
+end)
+
+--==================================================
+-- ABRIR / CERRAR
+--==================================================
+
+local OpenButton = Instance.new("ImageButton")
+
+OpenButton.Size = UDim2.fromOffset(60, 60)
+OpenButton.Position = UDim2.fromOffset(15, 160)
+
+OpenButton.BackgroundTransparency = 1
+OpenButton.BorderSizePixel = 0
+OpenButton.Image = "rbxassetid://98807466984428"
+OpenButton.ScaleType = Enum.ScaleType.Fit
+OpenButton.Visible = false
+OpenButton.Parent = Gui
+
+CloseButton.MouseButton1Click:Connect(function()
+
+    Panel.Visible = false
+    OpenButton.Visible = true
+
+end)
+
+OpenButton.MouseButton1Click:Connect(function()
+
+    Panel.Visible = true
+    OpenButton.Visible = false
+
+end)
+
+print("IsaitaHub cargado correctamente")
